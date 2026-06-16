@@ -2,7 +2,7 @@
 
 A small collection of focused, production-minded Laravel packages. Each one does
 one thing well, ships with tests, static analysis and CI, and targets **Laravel
-12 / PHP 8.2+**.
+12 & 13 / PHP 8.2+**.
 
 | Package | What it does |
 | --- | --- |
@@ -147,7 +147,7 @@ Every package ships with:
 - A test suite (PHPUnit + Orchestra Testbench)
 - Static analysis at **PHPStan level 6** (Larastan)
 - **Laravel Pint** formatting (Laravel preset)
-- GitHub Actions CI across PHP 8.2, 8.3 and 8.4
+- GitHub Actions CI across PHP 8.2 through 8.5 (Laravel 12 and 13)
 
 ## License
 
