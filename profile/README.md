@@ -11,6 +11,7 @@ one thing well, ships with tests, static analysis and CI, and targets **Laravel
 | [**laravel-state-machine**](https://github.com/webrek/laravel-state-machine) | Declarative state machines for Eloquent models. |
 | [**laravel-feature-flags**](https://github.com/webrek/laravel-feature-flags) | Feature flags with rollouts, targeting and A/B variants. |
 | [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | A production health dashboard and JSON endpoint. |
+| [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | A transactional outbox for reliable, atomic message delivery. |
 
 ---
 
@@ -113,12 +114,35 @@ Pluggable: implement the `Check` contract and register your own.
 composer require webrek/laravel-health-ui
 ```
 
+## laravel-outbox
+
+Stop losing events to dual writes. Stage a message inside the same database
+transaction as your business write — they commit together, so a rolled-back
+change never fires an event and a committed one never loses one — and a relay
+delivers it afterwards with retries and exponential backoff.
+
+```php
+DB::transaction(function () use ($order) {
+    $order->markPaid();
+    Outbox::publish('order.paid', ['order_id' => $order->id]);   // atomic with the write
+});
+```
+
+A pluggable publisher (events by default), multi-worker-safe claiming, automatic
+reclaim of stuck messages, and `outbox:work` / `outbox:prune` commands. The
+producer half of exactly-once — pair it with `laravel-idempotency` on the
+consumer.
+
+```bash
+composer require webrek/laravel-outbox
+```
+
 ---
 
 ## Using them together
 
-A single order flow touches all five — safe to retry, exact money, a guarded
-lifecycle, a gated feature, and observable health:
+A single order flow touches all six — safe to retry, exact money, a guarded
+lifecycle, a gated feature, a reliably published event, and observable health:
 
 ```php
 // routes/web.php
@@ -128,15 +152,20 @@ Route::post('/orders', StoreOrderController::class)->middleware('idempotency');
 public function __invoke(Request $request)
 {
     $total = Money::of($request->input('amount'), 'MXN');
-    $total = $total->plus($total->percentage(16));            // money
+    $total = $total->plus($total->percentage(16));                // money
 
-    $order = Order::create(['total' => $total]);              // state seeded to "pending"
+    $order = DB::transaction(function () use ($request, $total) {
+        $order = Order::create(['total' => $total]);              // state seeded to "pending"
 
-    if (Features::active('instant-capture', $request->user())) {  // feature-flags
-        $order->stateMachine()->apply('pay');                // state-machine (atomic)
-    }
+        if (Features::active('instant-capture', $request->user())) {  // feature-flags
+            $order->stateMachine()->apply('pay');                // state-machine (atomic)
+        }
 
-    return response()->json($order, 201);                    // idempotency replays on retry
+        Outbox::publish('order.placed', ['id' => $order->id]);   // outbox: commits with the order
+        return $order;
+    });
+
+    return response()->json($order, 201);                        // idempotency replays on retry
 }
 ```
 
