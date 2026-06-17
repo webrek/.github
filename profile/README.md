@@ -12,6 +12,7 @@ one thing well, ships with tests, static analysis and CI, and targets **Laravel
 | [**laravel-feature-flags**](https://github.com/webrek/laravel-feature-flags) | Feature flags with rollouts, targeting and A/B variants. |
 | [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | A production health dashboard and JSON endpoint. |
 | [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | A transactional outbox for reliable, atomic message delivery. |
+| [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Fail fast when a dependency is down, and recover automatically. |
 
 ---
 
@@ -137,12 +138,34 @@ consumer.
 composer require webrek/laravel-outbox
 ```
 
+## laravel-circuit-breaker
+
+Stop a failing dependency from taking your app down with it. After enough
+failures the circuit trips open and fails fast — no more requests piling up on a
+dead endpoint — then probes for recovery and closes itself when the service is
+healthy again.
+
+```php
+$response = CircuitBreaker::for('payments')->call(
+    fn () => Http::timeout(3)->post($url, $payload)->throw(),
+    fallback: fn () => null,   // returned while the circuit is open
+);
+```
+
+Three states (closed → open → half-open), distributed state in the cache,
+per-circuit thresholds, ignored exceptions and lifecycle events.
+
+```bash
+composer require webrek/laravel-circuit-breaker
+```
+
 ---
 
 ## Using them together
 
-A single order flow touches all six — safe to retry, exact money, a guarded
-lifecycle, a gated feature, a reliably published event, and observable health:
+A single order flow touches all seven — safe to retry, exact money, a guarded
+lifecycle, a gated feature, a payment shielded by a circuit breaker, a reliably
+published event, and observable health:
 
 ```php
 // routes/web.php
@@ -158,7 +181,9 @@ public function __invoke(Request $request)
         $order = Order::create(['total' => $total]);              // state seeded to "pending"
 
         if (Features::active('instant-capture', $request->user())) {  // feature-flags
-            $order->stateMachine()->apply('pay');                // state-machine (atomic)
+            CircuitBreaker::for('payments')->call(               // circuit-breaker
+                fn () => $order->stateMachine()->apply('pay'),  // state-machine (atomic)
+            );
         }
 
         Outbox::publish('order.placed', ['id' => $order->id]);   // outbox: commits with the order
