@@ -14,6 +14,7 @@ one thing well, ships with tests, static analysis and CI, and targets **Laravel
 | [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | A transactional outbox for reliable, atomic message delivery. |
 | [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Fail fast when a dependency is down, and recover automatically. |
 | [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Keep records for a window, then delete or anonymize them automatically. |
+| [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Validate Mexican identifiers (RFC, CURP, CLABE, NSS, CP) with real check digits. |
 
 ---
 
@@ -186,6 +187,33 @@ commands.
 
 ```bash
 composer require webrek/laravel-data-retention
+```
+
+## laravel-mx-validation
+
+Validate the Mexican identifiers your forms collect — RFC, CURP, CLABE, NSS and
+código postal — with real check-digit verification, not just a regex.
+
+```php
+$request->validate([
+    'rfc'   => ['required', 'rfc'],     // structure + date + check digit
+    'curp'  => ['required', 'curp'],
+    'clabe' => ['required', 'clabe'],
+]);
+```
+
+```php
+use Webrek\MxValidation\ValueObjects\Curp;
+
+$curp = Curp::parse('PEPJ900101HDFRRN09');
+$curp->stateName();   // "Ciudad de México"
+$curp->birthDate();   // Carbon 1990-01-01
+```
+
+Value objects, Eloquent casts and a Faker provider for valid sample data.
+
+```bash
+composer require webrek/laravel-mx-validation
 ```
 
 ---
