@@ -16,6 +16,7 @@ estático y CI, y apunta a **Laravel 12 y 13 / PHP 8.2+**.
 | [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Conserva registros durante un periodo y luego los elimina o anonimiza automáticamente. |
 | [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Valida identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales. |
 | [**arco**](https://github.com/webrek/arco) | Solicitudes ARCO de titulares de datos y un registro de consentimiento (LFPDPPP) — agnóstico al framework, con un puente para Laravel. |
+| [**sat-69b**](https://github.com/webrek/sat-69b) | Verifica RFCs contra la lista 69-B del SAT (EFOS/EDOS) — núcleo PHP, con puente para Laravel. |
 
 ---
 
@@ -221,6 +222,41 @@ ejemplo válidos.
 
 ```bash
 composer require webrek/laravel-mx-validation
+```
+
+## arco
+
+Lleva el control de las **solicitudes ARCO** con su plazo legal y una **bitácora
+de consentimiento** de solo-agregado (LFPDPPP). Núcleo independiente de framework
+con un puente para Laravel.
+
+```php
+use Webrek\Arco\Laravel\Facades\{Arco, Consent};
+use Webrek\Arco\ArcoRight;
+
+$solicitud = Arco::receive(ArcoRight::Acceso, $user);   // registrada con su plazo
+Consent::grant($user, 'marketing', ['privacy_version' => 'v3']);
+```
+
+```bash
+composer require webrek/arco
+```
+
+## sat-69b
+
+Verifica RFCs contra la **lista 69-B del SAT** (contribuyentes que facturan
+operaciones simuladas — EFOS/EDOS). Núcleo independiente de framework con un
+puente para Laravel que descarga y cachea el CSV oficial.
+
+```php
+use Webrek\Sat69b\Laravel\Facades\Sat69b;
+
+Sat69b::isBlacklisted('AAA010101AA1');             // presunto o definitivo
+Sat69b::check('AAA010101AA1')?->status->label();   // "Definitivo"
+```
+
+```bash
+composer require webrek/sat-69b
 ```
 
 ---
