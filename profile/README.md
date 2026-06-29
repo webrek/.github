@@ -17,6 +17,7 @@ estático y CI, y apunta a **Laravel 12 y 13 / PHP 8.2+**.
 | [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Valida identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales. |
 | [**arco**](https://github.com/webrek/arco) | Solicitudes ARCO de titulares de datos y un registro de consentimiento (LFPDPPP) — agnóstico al framework, con un puente para Laravel. |
 | [**sat-69b**](https://github.com/webrek/sat-69b) | Verifica RFCs contra la lista 69-B del SAT (EFOS/EDOS) — núcleo PHP, con puente para Laravel. |
+| [**cfdi**](https://github.com/webrek/cfdi) | Construye, sella y timbra CFDI 4.0 sobre phpcfdi — núcleo PHP, con puente para Laravel y driver de PAC. |
 
 ---
 
@@ -257,6 +258,24 @@ Sat69b::check('AAA010101AA1')?->status->label();   // "Definitivo"
 
 ```bash
 composer require webrek/sat-69b
+```
+
+## cfdi
+
+Construye y **sella** CFDI 4.0 sobre [phpcfdi/eclipxe](https://github.com/phpcfdi),
+y **timbra** detrás de un driver de PAC intercambiable. Núcleo independiente de
+framework con un puente para Laravel.
+
+```php
+use Webrek\Cfdi\Laravel\Facades\Cfdi;
+use Webrek\Cfdi\Csd;
+
+$resultado = Cfdi::issue($creator, app(Csd::class));   // sella + timbra
+$resultado->uuid;   // folio fiscal
+```
+
+```bash
+composer require webrek/cfdi
 ```
 
 ---
