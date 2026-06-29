@@ -13,6 +13,7 @@ estático y CI, y apunta a **Laravel 12 y 13 / PHP 8.2+**.
 | [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | Un panel de salud para producción y un endpoint JSON. |
 | [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | Un transactional outbox para entrega de mensajes confiable y atómica. |
 | [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Falla rápido cuando una dependencia está caída y se recupera automáticamente. |
+| [**saga**](https://github.com/webrek/saga) | Orquesta procesos de varios pasos y los deshace con compensaciones si uno falla. |
 | [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Conserva registros durante un periodo y luego los elimina o anonimiza automáticamente. |
 | [**mx-validation**](https://github.com/webrek/mx-validation) | Valida y genera identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales — núcleo PHP, con puente para Laravel. |
 | [**arco**](https://github.com/webrek/arco) | Solicitudes ARCO de titulares de datos y un registro de consentimiento (LFPDPPP) — agnóstico al framework, con un puente para Laravel. |
@@ -166,6 +167,27 @@ umbrales por circuito, excepciones ignoradas y eventos de ciclo de vida.
 
 ```bash
 composer require webrek/laravel-circuit-breaker
+```
+
+## saga
+
+Ejecuta procesos de varios pasos y, si uno falla, **deshace los anteriores** con
+su compensación (en orden inverso). Completa el cuarteto de resiliencia
+(idempotency · outbox · circuit-breaker · saga). Núcleo independiente de
+framework, con un puente para Laravel.
+
+```php
+use Webrek\Saga\Laravel\Facades\Saga;
+
+$resultado = Saga::for('checkout', ['order_id' => 42])
+    ->step('cobrar',  $cobrar,  compensate: $reembolsar)
+    ->step('apartar', $apartar, compensate: $liberar)
+    ->step('enviar',  $enviar)   // si esto falla → libera y reembolsa, automático
+    ->run();
+```
+
+```bash
+composer require webrek/saga
 ```
 
 ## laravel-data-retention
