@@ -14,7 +14,7 @@ estático y CI, y apunta a **Laravel 12 y 13 / PHP 8.2+**.
 | [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | Un transactional outbox para entrega de mensajes confiable y atómica. |
 | [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Falla rápido cuando una dependencia está caída y se recupera automáticamente. |
 | [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Conserva registros durante un periodo y luego los elimina o anonimiza automáticamente. |
-| [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Valida identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales. |
+| [**mx-validation**](https://github.com/webrek/mx-validation) | Valida y genera identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales — núcleo PHP, con puente para Laravel. |
 | [**arco**](https://github.com/webrek/arco) | Solicitudes ARCO de titulares de datos y un registro de consentimiento (LFPDPPP) — agnóstico al framework, con un puente para Laravel. |
 | [**sat-69b**](https://github.com/webrek/sat-69b) | Verifica RFCs contra la lista 69-B del SAT (EFOS/EDOS) — núcleo PHP, con puente para Laravel. |
 | [**cfdi**](https://github.com/webrek/cfdi) | Construye, sella y timbra CFDI 4.0 sobre phpcfdi — núcleo PHP, con puente para Laravel y driver de PAC. |
@@ -196,11 +196,11 @@ tabla de auditoría `data_retention_log` y comandos `retention:run` /
 composer require webrek/laravel-data-retention
 ```
 
-## laravel-mx-validation
+## mx-validation
 
-Valida los identificadores mexicanos que recopilan tus formularios — RFC, CURP,
-CLABE, NSS y código postal — con verificación real de dígito verificador, no
-solo una regex.
+Valida y genera los identificadores mexicanos — RFC, CURP, CLABE, NSS y código
+postal — con verificación real de dígito verificador, no solo una regex. Núcleo
+independiente de framework, con un puente para Laravel.
 
 ```php
 $request->validate([
@@ -218,11 +218,11 @@ $curp->stateName();   // "Ciudad de México"
 $curp->birthDate();   // Carbon 1990-01-01
 ```
 
-Objetos de valor, casts de Eloquent y un proveedor de Faker para datos de
-ejemplo válidos.
+Value objects (núcleo PHP), y en Laravel: reglas de validación, casts de Eloquent
+y un proveedor de Faker para datos de ejemplo válidos.
 
 ```bash
-composer require webrek/laravel-mx-validation
+composer require webrek/mx-validation
 ```
 
 ## arco
