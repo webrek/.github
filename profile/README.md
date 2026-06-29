@@ -1,37 +1,38 @@
-# Webrek Laravel Packages
+# Paquetes Laravel de Webrek
 
-A small collection of focused, production-minded Laravel packages. Each one does
-one thing well, ships with tests, static analysis and CI, and targets **Laravel
-12 & 13 / PHP 8.2+**.
+Una pequeña colección de paquetes de Laravel enfocados y pensados para
+producción. Cada uno hace una sola cosa bien, viene con pruebas, análisis
+estático y CI, y apunta a **Laravel 12 y 13 / PHP 8.2+**.
 
-| Package | What it does |
+| Paquete | Qué hace |
 | --- | --- |
-| [**laravel-idempotency**](https://github.com/webrek/laravel-idempotency) | Safe request retries via the `Idempotency-Key` header. |
-| [**laravel-money**](https://github.com/webrek/laravel-money) | An immutable money value object with exact arithmetic. |
-| [**laravel-state-machine**](https://github.com/webrek/laravel-state-machine) | Declarative state machines for Eloquent models. |
-| [**laravel-feature-flags**](https://github.com/webrek/laravel-feature-flags) | Feature flags with rollouts, targeting and A/B variants. |
-| [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | A production health dashboard and JSON endpoint. |
-| [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | A transactional outbox for reliable, atomic message delivery. |
-| [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Fail fast when a dependency is down, and recover automatically. |
-| [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Keep records for a window, then delete or anonymize them automatically. |
-| [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Validate Mexican identifiers (RFC, CURP, CLABE, NSS, CP) with real check digits. |
-| [**arco**](https://github.com/webrek/arco) | ARCO data-subject requests and a consent ledger (LFPDPPP) — framework-agnostic, with a Laravel bridge. |
+| [**laravel-idempotency**](https://github.com/webrek/laravel-idempotency) | Reintentos seguros de peticiones mediante el encabezado `Idempotency-Key`. |
+| [**laravel-money**](https://github.com/webrek/laravel-money) | Un objeto de valor de dinero inmutable con aritmética exacta. |
+| [**laravel-state-machine**](https://github.com/webrek/laravel-state-machine) | Máquinas de estados declarativas para modelos Eloquent. |
+| [**laravel-feature-flags**](https://github.com/webrek/laravel-feature-flags) | Feature flags con rollouts, segmentación y variantes A/B. |
+| [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | Un panel de salud para producción y un endpoint JSON. |
+| [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | Un transactional outbox para entrega de mensajes confiable y atómica. |
+| [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Falla rápido cuando una dependencia está caída y se recupera automáticamente. |
+| [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Conserva registros durante un periodo y luego los elimina o anonimiza automáticamente. |
+| [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Valida identificadores mexicanos (RFC, CURP, CLABE, NSS, CP) con dígitos verificadores reales. |
+| [**arco**](https://github.com/webrek/arco) | Solicitudes ARCO de titulares de datos y un registro de consentimiento (LFPDPPP) — agnóstico al framework, con un puente para Laravel. |
 
 ---
 
 ## laravel-idempotency
 
-Make write requests safe to retry. A client sends a unique `Idempotency-Key`; a
-repeat of the same request replays the original response instead of running
-twice. Concurrent duplicates are serialised with an atomic lock, and a key reused
-with a different payload is rejected.
+Haz que las peticiones de escritura sean seguras de reintentar. El cliente envía
+un `Idempotency-Key` único; una repetición de la misma petición reproduce la
+respuesta original en lugar de ejecutarse dos veces. Los duplicados concurrentes
+se serializan con un lock atómico, y una clave reutilizada con un payload
+distinto se rechaza.
 
 ```php
 Route::post('/orders', [OrderController::class, 'store'])->middleware('idempotency');
 ```
 
-Cache-backed, no migrations. Fires an `IdempotentReplay` event and supports
-per-route TTLs.
+Respaldado por caché, sin migraciones. Dispara un evento `IdempotentReplay` y
+admite TTLs por ruta.
 
 ```bash
 composer require webrek/laravel-idempotency
@@ -39,20 +40,21 @@ composer require webrek/laravel-idempotency
 
 ## laravel-money
 
-Money done right: stored as integer minor units, exact integer arithmetic, and
-rounding only where you ask for it.
+Dinero hecho bien: almacenado como unidades menores enteras, aritmética entera
+exacta y redondeo solo donde tú lo pides.
 
 ```php
 $price = Money::of('19.99', 'USD');
-$total = $price->plus($price->percentage(16));   // + 16% tax
+$total = $price->plus($price->percentage(16));   // + 16% de impuesto
 $total->format();                                 // "USD 23.19"
 
-Money::ofMinor(100, 'USD')->split(3);             // [0.34, 0.33, 0.33] — no cent lost
-$orders->sumMoney('total');                        // sum a collection
-$price->convert('EUR', $rates);                    // currency conversion
+Money::ofMinor(100, 'USD')->split(3);             // [0.34, 0.33, 0.33] — sin perder un centavo
+$orders->sumMoney('total');                        // suma una colección
+$price->convert('EUR', $rates);                    // conversión de divisas
 ```
 
-Eloquent casts, a validation rule, allocation, conversion and locale formatting.
+Casts de Eloquent, una regla de validación, asignación, conversión y formateo
+según locale.
 
 ```bash
 composer require webrek/laravel-money
@@ -60,18 +62,19 @@ composer require webrek/laravel-money
 
 ## laravel-state-machine
 
-Declare the states a model can be in and the transitions between them; the
-package enforces them with guards, events, optional history and atomic effects.
+Declara los estados en los que puede estar un modelo y las transiciones entre
+ellos; el paquete las hace cumplir con guards, eventos, historial opcional y
+efectos atómicos.
 
 ```php
 'ship' => Transition::from('paid')->to('shipped')
     ->guard(fn ($order) => filled($order->address))
-    ->using(fn ($order) => $order->warehouse->reserve()),   // atomic with the state change
+    ->using(fn ($order) => $order->warehouse->reserve()),   // atómico con el cambio de estado
 ```
 
 ```php
 $order->stateMachine()->apply('ship');
-$order->stateMachine()->toMermaid();   // render a diagram
+$order->stateMachine()->toMermaid();   // renderiza un diagrama
 ```
 
 ```bash
@@ -80,9 +83,9 @@ composer require webrek/laravel-state-machine
 
 ## laravel-feature-flags
 
-Ship features gradually with deterministic percentage rollouts, rule-based
-targeting and A/B variants — flip them at runtime from a built-in dashboard, no
-deploy.
+Lanza funcionalidades de forma gradual con rollouts por porcentaje
+deterministas, segmentación basada en reglas y variantes A/B — actívalas en
+tiempo de ejecución desde un panel integrado, sin necesidad de un deploy.
 
 ```php
 Features::create('new-checkout', rollout: 25);
@@ -94,8 +97,8 @@ Features::variant('button-color', $user);   // 'blue' | 'green'
 @feature('new-checkout') <x-checkout.v2 /> @endfeature
 ```
 
-Database or array store, a `@feature` directive, `feature` middleware, artisan
-commands and a web dashboard at `/feature-flags`.
+Almacenamiento en base de datos o en arreglo, una directiva `@feature`, un
+middleware `feature`, comandos de artisan y un panel web en `/feature-flags`.
 
 ```bash
 composer require webrek/laravel-feature-flags
@@ -103,16 +106,16 @@ composer require webrek/laravel-feature-flags
 
 ## laravel-health-ui
 
-Real health checks (database, cache, disk, queue, scheduler, migrations, TLS
-certs, external HTTP) behind one route — JSON `200`/`503` for uptime monitors and
-a status page for humans.
+Verificaciones de salud reales (base de datos, caché, disco, cola, scheduler,
+migraciones, certificados TLS, HTTP externo) detrás de una sola ruta — JSON
+`200`/`503` para monitores de uptime y una página de estado para humanos.
 
 ```bash
 curl -H "Accept: application/json" https://your-app.test/health
-php artisan health:check    # exits non-zero when unhealthy
+php artisan health:check    # sale con código distinto de cero cuando no está sano
 ```
 
-Pluggable: implement the `Check` contract and register your own.
+Extensible: implementa el contrato `Check` y registra el tuyo.
 
 ```bash
 composer require webrek/laravel-health-ui
@@ -120,22 +123,23 @@ composer require webrek/laravel-health-ui
 
 ## laravel-outbox
 
-Stop losing events to dual writes. Stage a message inside the same database
-transaction as your business write — they commit together, so a rolled-back
-change never fires an event and a committed one never loses one — and a relay
-delivers it afterwards with retries and exponential backoff.
+Deja de perder eventos por dual writes. Coloca un mensaje dentro de la misma
+transacción de base de datos que tu escritura de negocio — se confirman juntos,
+de modo que un cambio revertido nunca dispara un evento y uno confirmado nunca
+pierde ninguno — y un relay lo entrega después con reintentos y backoff
+exponencial.
 
 ```php
 DB::transaction(function () use ($order) {
     $order->markPaid();
-    Outbox::publish('order.paid', ['order_id' => $order->id]);   // atomic with the write
+    Outbox::publish('order.paid', ['order_id' => $order->id]);   // atómico con la escritura
 });
 ```
 
-A pluggable publisher (events by default), multi-worker-safe claiming, automatic
-reclaim of stuck messages, and `outbox:work` / `outbox:prune` commands. The
-producer half of exactly-once — pair it with `laravel-idempotency` on the
-consumer.
+Un publisher extensible (eventos por defecto), claiming seguro para múltiples
+workers, recuperación automática de mensajes atascados y comandos `outbox:work`
+/ `outbox:prune`. La mitad productora del exactly-once — combínalo con
+`laravel-idempotency` en el consumidor.
 
 ```bash
 composer require webrek/laravel-outbox
@@ -143,20 +147,20 @@ composer require webrek/laravel-outbox
 
 ## laravel-circuit-breaker
 
-Stop a failing dependency from taking your app down with it. After enough
-failures the circuit trips open and fails fast — no more requests piling up on a
-dead endpoint — then probes for recovery and closes itself when the service is
-healthy again.
+Evita que una dependencia que falla arrastre a tu aplicación consigo. Tras
+suficientes fallos el circuito se abre y falla rápido — sin más peticiones
+acumulándose sobre un endpoint muerto — luego sondea para detectar la
+recuperación y se cierra solo cuando el servicio vuelve a estar sano.
 
 ```php
 $response = CircuitBreaker::for('payments')->call(
     fn () => Http::timeout(3)->post($url, $payload)->throw(),
-    fallback: fn () => null,   // returned while the circuit is open
+    fallback: fn () => null,   // se devuelve mientras el circuito está abierto
 );
 ```
 
-Three states (closed → open → half-open), distributed state in the cache,
-per-circuit thresholds, ignored exceptions and lifecycle events.
+Tres estados (closed → open → half-open), estado distribuido en la caché,
+umbrales por circuito, excepciones ignoradas y eventos de ciclo de vida.
 
 ```bash
 composer require webrek/laravel-circuit-breaker
@@ -164,27 +168,27 @@ composer require webrek/laravel-circuit-breaker
 
 ## laravel-data-retention
 
-Keep personal data only as long as you should. Declare a retention window per
-model and what happens when rows age out — delete or anonymize them — and a
-scheduled command enforces it, logging every row it touches for your compliance
-trail.
+Conserva los datos personales solo durante el tiempo que debes. Declara un
+periodo de retención por modelo y qué ocurre cuando los registros lo superan —
+eliminarlos o anonimizarlos — y un comando programado lo hace cumplir,
+registrando cada fila que toca para tu rastro de cumplimiento.
 
 ```php
 public function retentionPolicy(RetentionPolicy $policy): RetentionPolicy
 {
     return $policy
-        ->since('last_seen_at')->keepFor(365)            // a year of inactivity…
+        ->since('last_seen_at')->keepFor(365)            // un año de inactividad…
         ->where(fn ($q) => $q->where('legal_hold', false))
-        ->anonymize([                                    // …then scrub the PII
+        ->anonymize([                                    // …luego limpia la PII
             'name'  => '[redacted]',
             'email' => fn ($c) => "anon+{$c->id}@example.test",
         ], markColumn: 'anonymized_at');
 }
 ```
 
-`delete()`, `forceDelete()` and `anonymize()` actions, legal-hold scoping, a
-`data_retention_log` audit table, and `retention:run` / `retention:list`
-commands.
+Acciones `delete()`, `forceDelete()` y `anonymize()`, scope de legal-hold, una
+tabla de auditoría `data_retention_log` y comandos `retention:run` /
+`retention:list`.
 
 ```bash
 composer require webrek/laravel-data-retention
@@ -192,12 +196,13 @@ composer require webrek/laravel-data-retention
 
 ## laravel-mx-validation
 
-Validate the Mexican identifiers your forms collect — RFC, CURP, CLABE, NSS and
-código postal — with real check-digit verification, not just a regex.
+Valida los identificadores mexicanos que recopilan tus formularios — RFC, CURP,
+CLABE, NSS y código postal — con verificación real de dígito verificador, no
+solo una regex.
 
 ```php
 $request->validate([
-    'rfc'   => ['required', 'rfc'],     // structure + date + check digit
+    'rfc'   => ['required', 'rfc'],     // estructura + fecha + dígito verificador
     'curp'  => ['required', 'curp'],
     'clabe' => ['required', 'clabe'],
 ]);
@@ -211,39 +216,21 @@ $curp->stateName();   // "Ciudad de México"
 $curp->birthDate();   // Carbon 1990-01-01
 ```
 
-Value objects, Eloquent casts and a Faker provider for valid sample data.
+Objetos de valor, casts de Eloquent y un proveedor de Faker para datos de
+ejemplo válidos.
 
 ```bash
 composer require webrek/laravel-mx-validation
 ```
 
-## arco
-
-Track **ARCO data-subject requests** with their 20-business-day legal deadline,
-and keep an **append-only consent ledger** — the records and timelines Mexico's
-LFPDPPP expects. A framework-agnostic core (PHP + Carbon) with an optional
-Laravel bridge (Eloquent, facades, migrations).
-
-```php
-use Webrek\Arco\Laravel\Facades\{Arco, Consent};
-use Webrek\Arco\ArcoRight;
-
-$request = Arco::receive(ArcoRight::Acceso, $user);   // logged with its deadline
-Consent::grant($user, 'marketing', ['privacy_version' => 'v3']);
-Consent::granted($user, 'marketing');                 // true
-```
-
-```bash
-composer require webrek/arco
-```
-
 ---
 
-## Using them together
+## Usándolos juntos
 
-A single order flow touches seven of them — safe to retry, exact money, a guarded
-lifecycle, a gated feature, a payment shielded by a circuit breaker, a reliably
-published event, and observable health:
+Un solo flujo de pedido toca siete de ellos — seguro de reintentar, dinero
+exacto, un ciclo de vida con guards, una funcionalidad gated, un pago protegido
+por un circuit breaker, un evento publicado de forma confiable y salud
+observable:
 
 ```php
 // routes/web.php
@@ -256,31 +243,31 @@ public function __invoke(Request $request)
     $total = $total->plus($total->percentage(16));                // money
 
     $order = DB::transaction(function () use ($request, $total) {
-        $order = Order::create(['total' => $total]);              // state seeded to "pending"
+        $order = Order::create(['total' => $total]);              // estado inicializado en "pending"
 
         if (Features::active('instant-capture', $request->user())) {  // feature-flags
             CircuitBreaker::for('payments')->call(               // circuit-breaker
-                fn () => $order->stateMachine()->apply('pay'),  // state-machine (atomic)
+                fn () => $order->stateMachine()->apply('pay'),  // state-machine (atómico)
             );
         }
 
-        Outbox::publish('order.placed', ['id' => $order->id]);   // outbox: commits with the order
+        Outbox::publish('order.placed', ['id' => $order->id]);   // outbox: hace commit junto con la orden
         return $order;
     });
 
-    return response()->json($order, 201);                        // idempotency replays on retry
+    return response()->json($order, 201);                        // idempotency reproduce la respuesta al reintentar
 }
 ```
 
-## Quality
+## Calidad
 
-Every package ships with:
+Cada paquete viene con:
 
-- A test suite (PHPUnit + Orchestra Testbench)
-- Static analysis at **PHPStan level 6** (Larastan)
-- **Laravel Pint** formatting (Laravel preset)
-- GitHub Actions CI across PHP 8.2 through 8.5 (Laravel 12 and 13)
+- Una suite de pruebas (PHPUnit + Orchestra Testbench)
+- Análisis estático en **PHPStan nivel 6** (Larastan)
+- Formateo con **Laravel Pint** (preset de Laravel)
+- CI con GitHub Actions desde PHP 8.2 hasta 8.5 (Laravel 12 y 13)
 
-## License
+## Licencia
 
-All packages are released under the [MIT license](https://opensource.org/licenses/MIT).
+Todos los paquetes se publican bajo la [licencia MIT](https://opensource.org/licenses/MIT).
