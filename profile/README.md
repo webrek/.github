@@ -13,6 +13,7 @@ one thing well, ships with tests, static analysis and CI, and targets **Laravel
 | [**laravel-health-ui**](https://github.com/webrek/laravel-health-ui) | A production health dashboard and JSON endpoint. |
 | [**laravel-outbox**](https://github.com/webrek/laravel-outbox) | A transactional outbox for reliable, atomic message delivery. |
 | [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Fail fast when a dependency is down, and recover automatically. |
+| [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Keep records for a window, then delete or anonymize them automatically. |
 
 ---
 
@@ -159,11 +160,39 @@ per-circuit thresholds, ignored exceptions and lifecycle events.
 composer require webrek/laravel-circuit-breaker
 ```
 
+## laravel-data-retention
+
+Keep personal data only as long as you should. Declare a retention window per
+model and what happens when rows age out — delete or anonymize them — and a
+scheduled command enforces it, logging every row it touches for your compliance
+trail.
+
+```php
+public function retentionPolicy(RetentionPolicy $policy): RetentionPolicy
+{
+    return $policy
+        ->since('last_seen_at')->keepFor(365)            // a year of inactivity…
+        ->where(fn ($q) => $q->where('legal_hold', false))
+        ->anonymize([                                    // …then scrub the PII
+            'name'  => '[redacted]',
+            'email' => fn ($c) => "anon+{$c->id}@example.test",
+        ], markColumn: 'anonymized_at');
+}
+```
+
+`delete()`, `forceDelete()` and `anonymize()` actions, legal-hold scoping, a
+`data_retention_log` audit table, and `retention:run` / `retention:list`
+commands.
+
+```bash
+composer require webrek/laravel-data-retention
+```
+
 ---
 
 ## Using them together
 
-A single order flow touches all seven — safe to retry, exact money, a guarded
+A single order flow touches seven of them — safe to retry, exact money, a guarded
 lifecycle, a gated feature, a payment shielded by a circuit breaker, a reliably
 published event, and observable health:
 
