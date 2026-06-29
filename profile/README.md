@@ -15,6 +15,7 @@ one thing well, ships with tests, static analysis and CI, and targets **Laravel
 | [**laravel-circuit-breaker**](https://github.com/webrek/laravel-circuit-breaker) | Fail fast when a dependency is down, and recover automatically. |
 | [**laravel-data-retention**](https://github.com/webrek/laravel-data-retention) | Keep records for a window, then delete or anonymize them automatically. |
 | [**laravel-mx-validation**](https://github.com/webrek/laravel-mx-validation) | Validate Mexican identifiers (RFC, CURP, CLABE, NSS, CP) with real check digits. |
+| [**arco**](https://github.com/webrek/arco) | ARCO data-subject requests and a consent ledger (LFPDPPP) — framework-agnostic, with a Laravel bridge. |
 
 ---
 
@@ -214,6 +215,26 @@ Value objects, Eloquent casts and a Faker provider for valid sample data.
 
 ```bash
 composer require webrek/laravel-mx-validation
+```
+
+## arco
+
+Track **ARCO data-subject requests** with their 20-business-day legal deadline,
+and keep an **append-only consent ledger** — the records and timelines Mexico's
+LFPDPPP expects. A framework-agnostic core (PHP + Carbon) with an optional
+Laravel bridge (Eloquent, facades, migrations).
+
+```php
+use Webrek\Arco\Laravel\Facades\{Arco, Consent};
+use Webrek\Arco\ArcoRight;
+
+$request = Arco::receive(ArcoRight::Acceso, $user);   // logged with its deadline
+Consent::grant($user, 'marketing', ['privacy_version' => 'v3']);
+Consent::granted($user, 'marketing');                 // true
+```
+
+```bash
+composer require webrek/arco
 ```
 
 ---
